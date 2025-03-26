@@ -1,0 +1,88 @@
+{
+    "usuarios": [
+        {
+            "id": 1,
+            "email": "admin@admin.com",
+            "name": "Leonardo",
+            "surname1": "Signorelli",
+            "surname2": "Stevens"
+        },
+        {
+            "id": 2,
+            "email": "pedro@yopmail.com",
+            "name": "Pedro",
+            "surname1": "Garcia",
+            "surname2": "Ruiz"
+        },
+        {
+            "id": 3,
+            "email": "andres@yopmail.com",
+            "name": "Andrés",
+            "surname1": "Bello",
+            "surname2": "Lopez"
+        },
+        {
+            "id": 4,
+            "email": "santiago@yopmail.com",
+            "name": "Santiago",
+            "surname1": "Zebedeo",
+            "surname2": "Molina"
+        },
+        {
+            "id": 5,
+            "email": "santiago@yopmail.com",
+            "name": "Judas",
+            "surname1": "Tadeo",
+            "surname2": "Iscariote"
+        },
+        {
+            "id": 6,
+            "email": "juan@yopmail.com",
+            "name": "Juan",
+            "surname1": "Zebedeo",
+            "surname2": "Marin"
+        },
+        {
+            "id": 7,
+            "email": "mateo@yopmail.com",
+            "name": "Mateo",
+            "surname1": "Levi",
+            "surname2": "Ramos"
+        },
+        {
+            "id": 8,
+            "email": "felipe@yopmail.com",
+            "name": "Felipe",
+            "surname1": "Torres",
+            "surname2": "Romero"
+        },
+        {
+            "id": 9,
+            "email": "tomas@yopmail.com",
+            "name": "Tomás",
+            "surname1": "Diaz",
+            "surname2": "Perez"
+        },
+        {
+            "id": 10,
+            "email": "bartolome@yopmail.com",
+            "name": "Bartolomé",
+            "surname1": "Santos",
+            "surname2": "Prieto"
+        },
+        {
+            "id": 11,
+            "email": "simon@yopmail.com",
+            "name": "Simón",
+            "surname1": "Zelote",
+            "surname2": "Cananeo"
+        },
+        {
+            "id": 12,
+            "email": "matias@yopmail.com",
+            "name": "Matías",
+            "surname1": "Arias",
+            "surname2": "Mora"
+        }
+    ]
+}

@@ -1,0 +1,5 @@
+name: 'Listado Usuarios'
+type: module
+description: "Módulo que muestra un listado paginado de usuarios."
+package: Custom
+core_version_requirement: ^10 || ^11
