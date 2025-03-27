@@ -2,6 +2,7 @@ listado_usuarios.listado_usuarios_page:
   path: '/listado-usuarios'
   defaults:
     _title: 'Listado de Usuarios'
-    _controller: '\Drupal\listado_usuarios\Controller\ListadoUsuarios::build'
+    _form: '\Drupal\listado_usuarios\Form\ListadoUsuariosForm'
+    # _controller: '\Drupal\listado_usuarios\Controller\ListadoUsuarios::build'
   requirements:
     _permission: 'access content'
