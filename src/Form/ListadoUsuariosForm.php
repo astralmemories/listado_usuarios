@@ -61,24 +61,37 @@ class ListadoUsuariosForm extends FormBase {
      * {@inheritdoc}
      */
     public function buildForm(array $form, FormStateInterface $form_state): array {
-
-        $url = $_SERVER['SERVER_NAME'] . '/modules/custom/listado_usuarios/data/usuarios.json';
+        $url = $_SERVER['SERVER_NAME'] . '/modules/custom/listado_usuarios/api/fetch_users.php';
 
         try {
-            $response = $this->httpClient->get($url);
+            // Make a POST request with the 'json' option.
+            $response = $this->httpClient->post($url, [
+                'json' => [
+                    'limit' => 5, // Specify the limit in the POST request body.
+                ],
+            ]);
+
+            // Decode the response body.
             $data = json_decode($response->getBody()->getContents());
+
+            // If the server doesn't handle the limit, filter the data manually.
+            if ($data && isset($data->usuarios)) {
+                $users = array_slice($data->usuarios, 0, 5); // Get the first 5 users.
+            }
+            else {
+                $users = [];
+            }
         }
         catch (\Exception $e) {
             $this->logger->warning('Unable to complete the request. Error: ' . $e->getMessage());
-            $data = null;
+            $users = [];
         }
 
-        if ($data) {
-            $users = $data->usuarios;
-
+        // Build the table of users.
+        if (!empty($users)) {
             $table = '<table>';
-            foreach($users as $user) {
-                $table .= "<tr><td>$user->id</td> <td>$user->email</td> <td>$user->name</td> <td>$user->surname1</td> <td>$user->surname2</td></tr>";
+            foreach ($users as $user) {
+                $table .= "<tr><td>{$user->id}</td> <td>{$user->email}</td> <td>{$user->name}</td> <td>{$user->surname1}</td> <td>{$user->surname2}</td></tr>";
             }
             $table .= '</table>';
         }
@@ -94,8 +107,8 @@ class ListadoUsuariosForm extends FormBase {
             '#markup' => $output,
         ];
 
-        //////////////////////////
 
+        //////////////////////////
 
 
         $form['description'] = [
@@ -133,11 +146,11 @@ class ListadoUsuariosForm extends FormBase {
         // element.
         $temperature = $form_state->getValue('temperature');
         if (!empty($temperature)) {
-        $form['color_wrapper']['color'] = [
-            '#type' => 'select',
-            '#title' => $this->t('Color'),
-            '#options' => $this->getColorsByTemperature($temperature),
-        ];
+            $form['color_wrapper']['color'] = [
+                '#type' => 'select',
+                '#title' => $this->t('Color'),
+                '#options' => $this->getColorsByTemperature($temperature),
+            ];
         }
 
         // Add a submit button that handles the submission of the form.
@@ -152,7 +165,6 @@ class ListadoUsuariosForm extends FormBase {
         return $form;
     }
 
-
     /**
      * {@inheritdoc}
      * No se necesita lógica de envío.
@@ -160,8 +172,6 @@ class ListadoUsuariosForm extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
         // No se necesita lógica de envío.
     }
-
-
 
     /**
      * Ajax callback for the color dropdown.
@@ -209,17 +219,17 @@ class ListadoUsuariosForm extends FormBase {
             'warm' => [
                 'name' => $this->t('Warm'),
                 'colors' => [
-                'red' => $this->t('Red'),
-                'orange' => $this->t('Orange'),
-                'yellow' => $this->t('Yellow'),
+                    'red' => $this->t('Red'),
+                    'orange' => $this->t('Orange'),
+                    'yellow' => $this->t('Yellow'),
                 ],
             ],
             'cool' => [
                 'name' => $this->t('Cool'),
                 'colors' => [
-                'blue' => $this->t('Blue'),
-                'purple' => $this->t('Purple'),
-                'green' => $this->t('Green'),
+                    'blue' => $this->t('Blue'),
+                    'purple' => $this->t('Purple'),
+                    'green' => $this->t('Green'),
                 ],
             ],
         ];
