@@ -87,79 +87,59 @@ class ListadoUsuariosForm extends FormBase {
             $users = [];
         }
 
-        // Build the table of users.
-        if (!empty($users)) {
-            $table = '<table>';
-            foreach ($users as $user) {
-                $table .= "<tr><td>{$user->id}</td> <td>{$user->email}</td> <td>{$user->name}</td> <td>{$user->surname1}</td> <td>{$user->surname2}</td></tr>";
-            }
-            $table .= '</table>';
-        }
-        else {
-            $table = '<p>Could not get the users list.</p>';
-        }
-
-        $output = "<p>Listado de usuarios.</p>";
-        $output .= $table;
-
-        $form['listado_usuarios'] = [
-            '#type' => 'markup',
-            '#markup' => $output,
+        // Add a filter field.
+        $form['filter_users'] = [
+            '#type' => 'textfield',
+            '#title' => $this->t('Filtrar listado de usuarios'),
+            '#description' => $this->t('Filtrar el listado por: nombre, apellidos y correo electrónico.'),
         ];
 
-
-        //////////////////////////
-
-
-        $form['description'] = [
-            '#type' => 'item',
-            '#markup' => $this->t('This form example demonstrates functioning of an AJAX callback.'),
-        ];
-
-        // The #ajax attribute used in the temperature input element defines an ajax
-        // callback that will invoke the 'updateColor' method on this form object.
-        // Whenever the temperature element changes, it will invoke this callback
-        // and replace the contents of the 'color_wrapper' container with the
-        // results of this method call.
-        $form['temperature'] = [
-            '#title' => $this->t('Temperature'),
-            '#type' => 'select',
-            '#options' => $this->getColorTemperatures(),
-            '#empty_option' => $this->t('- Select a color temperature -'),
+        // Add a filter button
+        $form['filter_button'] = [
+            '#type' => 'button',
+            '#value' => $this->t('Filtrar'),
             '#ajax' => [
-                // Could also use [get_class($this), 'updateColor'].
-                'callback' => '::updateColor',
-                'wrapper' => 'color-wrapper',
+                'callback' => '::updateList',
+                'wrapper' => 'listado-usuarios-wrapper',
             ],
         ];
 
         // Add a wrapper that can be replaced with new HTML by the ajax callback.
         // This is given the ID that was passed to the ajax callback in the '#ajax'
         // element above.
-        $form['color_wrapper'] = [
+        $form['listado_usuarios_wrapper'] = [
             '#type' => 'container',
-            '#attributes' => ['id' => 'color-wrapper'],
+            '#attributes' => ['id' => 'listado-usuarios-wrapper'],
         ];
 
-        // Add a color element to the color_wrapper container using the value
-        // from temperature to determine which colors to include in the select
-        // element.
-        $temperature = $form_state->getValue('temperature');
-        if (!empty($temperature)) {
-            $form['color_wrapper']['color'] = [
-                '#type' => 'select',
-                '#title' => $this->t('Color'),
-                '#options' => $this->getColorsByTemperature($temperature),
-            ];
+        // Build the table rows.
+        $table_rows = [];
+        if (!empty($users)) {
+            foreach ($users as $user) {
+                $table_rows[] = [
+                    $user->id,
+                    $user->email,
+                    $user->name,
+                    $user->surname1,
+                    $user->surname2,
+                ];
+            }
+        }
+        else {
+            $table_rows[] = ['No se encontraron usuarios.'];
         }
 
-        // Add a submit button that handles the submission of the form.
-        $form['actions'] = [
-            '#type' => 'actions',
-            'submit' => [
-                '#type' => 'submit',
-                '#value' => $this->t('Submit'),
+        // Build the table of users inside the listado_usuarios_wrapper.
+        $form['listado_usuarios_wrapper']['listado_usuarios_table'] = [
+            '#type' => 'table',
+            '#header' => [
+                $this->t('ID'),
+                $this->t('Correo electrónico'),
+                $this->t('Nombre'),
+                $this->t('Primer apellido'),
+                $this->t('Segundo apellido'),
             ],
+            '#rows' => $table_rows,
         ];
 
         return $form;
@@ -174,65 +154,56 @@ class ListadoUsuariosForm extends FormBase {
     }
 
     /**
-     * Ajax callback for the color dropdown.
+     * Ajax callback for the filter button.
      */
-    public function updateColor(array $form, FormStateInterface $form_state) {
-        return $form['color_wrapper'];
-    }
-
-    /**
-     * Returns colors that correspond with the given temperature.
-     *
-     * @param string $temperature
-     *   The color temperature for which to return a list of colors. Can be either
-     *   'warm' or 'cool'.
-     *
-     * @return array
-     *   An associative array of colors that correspond to the given color
-     *   temperature, suitable to use as form options.
-     */
-    protected function getColorsByTemperature($temperature) {
-        return $this->getColors()[$temperature]['colors'];
-    }
-
-    /**
-     * Returns a list of color temperatures.
-     *
-     * @return array
-     *   An associative array of color temperatures, suitable to use as form
-     *   options.
-     */
-    protected function getColorTemperatures() {
-        return array_map(function ($color_data) {
-            return $color_data['name'];
-        }, $this->getColors());
-    }
-
-    /**
-     * Returns an array of colors grouped by color temperature.
-     *
-     * @return array
-     *   An associative array of color data, keyed by color temperature.
-     */
-    protected function getColors() {
-        return [
-            'warm' => [
-                'name' => $this->t('Warm'),
-                'colors' => [
-                    'red' => $this->t('Red'),
-                    'orange' => $this->t('Orange'),
-                    'yellow' => $this->t('Yellow'),
+    public function updateList(array $form, FormStateInterface $form_state) {
+        // Get the filter value from the form.
+        $filter = $form_state->getValue('filter_users');
+    
+        // Define the URL to the fetch_users.php script.
+        $url = $_SERVER['SERVER_NAME'] . '/modules/custom/listado_usuarios/api/fetch_users.php';
+    
+        try {
+            // Make a POST request with the 'json' option.
+            $response = $this->httpClient->post($url, [
+                'json' => [
+                    'filter' => $filter, // Send the filter value.
+                    'limit' => 5,        // Limit the number of results.
                 ],
-            ],
-            'cool' => [
-                'name' => $this->t('Cool'),
-                'colors' => [
-                    'blue' => $this->t('Blue'),
-                    'purple' => $this->t('Purple'),
-                    'green' => $this->t('Green'),
-                ],
-            ],
-        ];
+            ]);
+    
+            // Decode the response body.
+            $data = json_decode($response->getBody()->getContents());
+    
+            // If the response contains users, build the table rows.
+            $table_rows = [];
+            if ($data && isset($data->usuarios)) {
+                foreach ($data->usuarios as $user) {
+                    $table_rows[] = [
+                        $user->id,
+                        $user->email,
+                        $user->name,
+                        $user->surname1,
+                        $user->surname2,
+                    ];
+                }
+            }
+            else {
+                $table_rows[] = ['No se encontraron usuarios.'];
+            }
+    
+            // Update the table rows in the form.
+            $form['listado_usuarios_wrapper']['listado_usuarios_table']['#rows'] = $table_rows;
+        }
+        catch (\Exception $e) {
+            $this->logger->warning('Unable to complete the request. Error: ' . $e->getMessage());
+            $form['listado_usuarios_wrapper']['listado_usuarios_table']['#rows'] = [
+                ['No se encontraron usuarios debido a un error.'],
+            ];
+        }
+    
+        // Return the updated wrapper.
+        return $form['listado_usuarios_wrapper'];
     }
 
 }
