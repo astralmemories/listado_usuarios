@@ -24,9 +24,10 @@ if (!$data || !isset($data->usuarios)) {
 // Get the POST input.
 $input = json_decode(file_get_contents('php://input'), true);
 
-// Get the filter and limit parameters from the POST request.
+// Get the filter, limit, and page parameters from the POST request.
 $filter = isset($input['filter']) ? strtolower(trim($input['filter'])) : '';
 $limit = isset($input['limit']) ? (int) $input['limit'] : 0;
+$page = isset($input['page']) ? (int) $input['page'] : 1;
 
 // Filter the users based on the filter value.
 $users = $data->usuarios;
@@ -39,11 +40,17 @@ if (!empty($filter)) {
     });
 }
 
-// Apply the limit if specified.
+// Calculate the offset for pagination.
+$offset = ($page - 1) * $limit;
+
+// Apply the limit and offset if specified.
 if ($limit > 0) {
-    $users = array_slice($users, 0, $limit);
+    $users = array_slice($users, $offset, $limit);
 }
 
 // Return the filtered users as JSON.
 header('Content-Type: application/json');
-echo json_encode(['usuarios' => array_values($users)]);
+echo json_encode([
+    'usuarios' => array_values($users),
+    'total' => count($data->usuarios), // Total number of users (before filtering).
+]);
