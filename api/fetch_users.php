@@ -40,6 +40,9 @@ if (!empty($filter)) {
     });
 }
 
+// Save the total number of users after filtering.
+$total_users_filtered = count($users);
+
 // Calculate the offset for pagination.
 $offset = ($page - 1) * $limit;
 
@@ -53,4 +56,5 @@ header('Content-Type: application/json');
 echo json_encode([
     'usuarios' => array_values($users),
     'total' => count($data->usuarios), // Total number of users (before filtering).
+    'total_filtered' => $total_users_filtered, // Total number of users after filtering.
 ]);

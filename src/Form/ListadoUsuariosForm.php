@@ -10,6 +10,7 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
 use Drupal\Core\DependencyInjection\AutowireTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
  * Implements the ajax demo form controller.
@@ -39,14 +40,23 @@ class ListadoUsuariosForm extends FormBase {
      */
     protected $logger;
 
-    public function __construct(ClientInterface $httpClient) {
+    /**
+     * User session.
+     *
+     * @var \Symfony\Component\HttpFoundation\Session\SessionInterface
+     */
+    protected $session;
+
+    public function __construct(ClientInterface $httpClient, SessionInterface $session) {
         $this->httpClient = $httpClient;
         $this->logger = $this->getLogger('listado_usuarios');
+        $this->session = $session;
     }
 
     public static function create(ContainerInterface $container) {
         return new static(
             $container->get('http_client'),
+            $container->get('session')
         );
     }
 
@@ -149,12 +159,12 @@ class ListadoUsuariosForm extends FormBase {
         // Prepare the options for the pager.
         $pager_options = [];
         for ($i = 1; $i <= $total_pages; $i++) {
-            $pager_options[$i] = $i;
+            $pager_options[$i] = $this->t('Page @num', ['@num' => $i]);
         }
 
         // Add a pager element to the form using radios.
         $form['listado_usuarios_wrapper']['pager'] = [
-            '#type' => 'radios',
+            '#type' => 'select',
             '#title' => $this->t('Pager'),
             '#default_value' => 1,
             '#options' => $pager_options,
@@ -183,6 +193,27 @@ class ListadoUsuariosForm extends FormBase {
         // Get the filter value and current page from the form.
         $filter = $form_state->getValue('filter_users');
         $page = $form_state->getValue('pager') ?? 1;
+
+        // Retrieve the last filtered value from the session.
+        $last_filtered_value = $this->session->get('last_filtered_value', '');
+
+        // Log the last filtered value for debugging.
+        $this->logger->info('Last filtered value: ' . $last_filtered_value);
+
+        // Log the current filter value for debugging.
+        $this->logger->info('Current filter value: ' . $filter);
+
+        // Check if the filter value is different from the last one.
+        if ($last_filtered_value !== $filter) {
+            // Update the last filtered value in the session.
+            $this->session->set('last_filtered_value', $filter);
+
+            // Reset to the first page.
+            $page = 1;
+
+            // Log the change for debugging.
+            $this->logger->info('Filter value changed. Resetting to page 1.');
+        }
 
         // Define the URL to the fetch_users.php script.
         $url = $_SERVER['SERVER_NAME'] . '/modules/custom/listado_usuarios/api/fetch_users.php';
@@ -220,20 +251,20 @@ class ListadoUsuariosForm extends FormBase {
             // Update the table rows in the form.
             $form['listado_usuarios_wrapper']['listado_usuarios_table']['#rows'] = $table_rows;
 
-            // Calculate the total number of pages based on the filtered results.
-            $total_users = isset($data->usuarios) ? count($data->usuarios) : 0;
-            $total_pages = ceil($total_users / 5);
+            // Calculate new number of pages.
+            $total_pages = $data->total_filtered / 5;
+            $total_pages = ceil($total_pages);
 
             // Prepare the options for the pager.
             $pager_options = [];
             for ($i = 1; $i <= $total_pages; $i++) {
-                $pager_options[$i] = $i;
+                $pager_options[$i] = $this->t('Page @num', ['@num' => $i]);
             }
 
             // Update the pager element.
             $form['listado_usuarios_wrapper']['pager']['#title'] = $this->t('NEW Pager');
-            $form['listado_usuarios_wrapper']['pager']['#default_value'] = $page;
             $form['listado_usuarios_wrapper']['pager']['#options'] = $pager_options;
+            $form['listado_usuarios_wrapper']['pager']['#default_value'] = $page;
         }
         catch (\Exception $e) {
             $this->logger->warning('Unable to complete the request. Error: ' . $e->getMessage());
