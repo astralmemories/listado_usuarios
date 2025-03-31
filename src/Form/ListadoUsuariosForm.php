@@ -72,6 +72,9 @@ class ListadoUsuariosForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
+    // Attach the CSS library to the form.
+    $form['#attached']['library'][] = 'listado_usuarios/listado-usuarios';
+
     // Grab the module's configuration settings.
     $settings = $this->config('listado_usuarios.settings');
 
@@ -125,15 +128,21 @@ class ListadoUsuariosForm extends FormBase {
       $users = [];
     }
 
+    // Add a container for the form elements.
+    $form['listado_usuarios_form_wrapper'] = [
+      '#type' => 'container',
+      '#attributes' => ['class' => 'listado-usuarios-form-wrapper'],
+    ];
+
     // Add a filter field for searching users.
-    $form['filter_users'] = [
+    $form['listado_usuarios_form_wrapper']['filter_users'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Filtrar listado de usuarios'),
       '#description' => $this->t('Filtrar el listado por: nombre, apellidos y correo electrónico.'),
     ];
 
     // Add a filter button with an AJAX callback.
-    $form['filter_button'] = [
+    $form['listado_usuarios_form_wrapper']['filter_button'] = [
       '#type' => 'button',
       '#value' => $this->t('Filtrar'),
       '#ajax' => [
@@ -199,7 +208,7 @@ class ListadoUsuariosForm extends FormBase {
     // Add a pager element to the form using a select dropdown.
     $form['listado_usuarios_wrapper']['pager'] = [
       '#type' => 'select',
-      '#title' => $this->t('Pager'),
+      '#title' => $this->t('Paginador'),
       '#default_value' => 1,
       '#options' => $pager_options,
       '#ajax' => [
