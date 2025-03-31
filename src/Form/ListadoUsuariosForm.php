@@ -13,11 +13,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
- * Implements the ajax demo form controller.
+ * Implements the ajax form controller.
  *
  * This example demonstrates using ajax callbacks to populate the options of a
- * color select element dynamically based on the value selected in another
- * select element in the form.
+ * user list dynamically based on the value selected in the filter field.
  *
  * @see \Drupal\Core\Form\FormBase
  * @see \Drupal\Core\Form\ConfigFormBase
@@ -27,21 +26,21 @@ class ListadoUsuariosForm extends FormBase {
     use AutowireTrait;
 
     /**
-     * HTTP client.
+     * HTTP client for making API requests.
      *
      * @var \GuzzleHttp\ClientInterface
      */
     protected $httpClient;
 
     /**
-     * Logger channel.
+     * Logger channel for logging messages.
      *
      * @var \Psr\Log\LoggerInterface
      */
     protected $logger;
 
     /**
-     * User session.
+     * User session for persisting data across requests.
      *
      * @var \Symfony\Component\HttpFoundation\Session\SessionInterface
      */
@@ -53,6 +52,9 @@ class ListadoUsuariosForm extends FormBase {
         $this->session = $session;
     }
 
+    /**
+     * Dependency injection for the form.
+     */
     public static function create(ContainerInterface $container) {
         return new static(
             $container->get('http_client'),
@@ -74,37 +76,38 @@ class ListadoUsuariosForm extends FormBase {
         $url = $_SERVER['SERVER_NAME'] . '/modules/custom/listado_usuarios/api/fetch_users.php';
 
         try {
-            // Make a POST request with the 'json' option.
+            // Make a POST request to fetch the user data.
             $response = $this->httpClient->post($url, [
                 'json' => [
-                    'limit' => 5, // Specify the limit in the POST request body.
+                    'limit' => 5, // Limit the number of results per page.
                 ],
             ]);
 
             // Decode the response body.
             $data = json_decode($response->getBody()->getContents());
 
-            // If the server doesn't handle the limit, filter the data manually.
+            // Extract the first 5 users if data is available.
             if ($data && isset($data->usuarios)) {
-                $users = array_slice($data->usuarios, 0, 5); // Get the first 5 users.
+                $users = array_slice($data->usuarios, 0, 5);
             }
             else {
                 $users = [];
             }
         }
         catch (\Exception $e) {
+            // Log any errors and set users to an empty array.
             $this->logger->warning('Unable to complete the request. Error: ' . $e->getMessage());
             $users = [];
         }
 
-        // Add a filter field.
+        // Add a filter field for searching users.
         $form['filter_users'] = [
             '#type' => 'textfield',
             '#title' => $this->t('Filtrar listado de usuarios'),
             '#description' => $this->t('Filtrar el listado por: nombre, apellidos y correo electrónico.'),
         ];
 
-        // Add a filter button
+        // Add a filter button with an AJAX callback.
         $form['filter_button'] = [
             '#type' => 'button',
             '#value' => $this->t('Filtrar'),
@@ -115,14 +118,12 @@ class ListadoUsuariosForm extends FormBase {
         ];
 
         // Add a wrapper that can be replaced with new HTML by the ajax callback.
-        // This is given the ID that was passed to the ajax callback in the '#ajax'
-        // element above.
         $form['listado_usuarios_wrapper'] = [
             '#type' => 'container',
             '#attributes' => ['id' => 'listado-usuarios-wrapper'],
         ];
 
-        // Build the table rows.
+        // Build the table rows for the user list.
         $table_rows = [];
         if (!empty($users)) {
             foreach ($users as $user) {
@@ -139,7 +140,7 @@ class ListadoUsuariosForm extends FormBase {
             $table_rows[] = ['No se encontraron usuarios.'];
         }
 
-        // Build the table of users inside the listado_usuarios_wrapper.
+        // Add the user list table to the wrapper.
         $form['listado_usuarios_wrapper']['listado_usuarios_table'] = [
             '#type' => 'table',
             '#header' => [
@@ -152,17 +153,17 @@ class ListadoUsuariosForm extends FormBase {
             '#rows' => $table_rows,
         ];
 
-        // Calculate number of pages.
+        // Calculate the total number of pages.
         $total_pages = $data->total / 5;
         $total_pages = ceil($total_pages);
 
-        // Prepare the options for the pager.
+        // Prepare the pager options.
         $pager_options = [];
         for ($i = 1; $i <= $total_pages; $i++) {
             $pager_options[$i] = $this->t('Page @num', ['@num' => $i]);
         }
 
-        // Add a pager element to the form using radios.
+        // Add a pager element to the form using a select dropdown.
         $form['listado_usuarios_wrapper']['pager'] = [
             '#type' => 'select',
             '#title' => $this->t('Pager'),
@@ -181,6 +182,7 @@ class ListadoUsuariosForm extends FormBase {
     /**
      * {@inheritdoc}
      * No se necesita lógica de envío.
+     * This form does not require traditional submission logic since it relies entirely on AJAX.
      */
     public function submitForm(array &$form, FormStateInterface $form_state) {
         // No se necesita lógica de envío.
@@ -197,29 +199,21 @@ class ListadoUsuariosForm extends FormBase {
         // Retrieve the last filtered value from the session.
         $last_filtered_value = $this->session->get('last_filtered_value', '');
 
-        // Log the last filtered value for debugging.
-        $this->logger->info('Last filtered value: ' . $last_filtered_value);
-
-        // Log the current filter value for debugging.
-        $this->logger->info('Current filter value: ' . $filter);
-
-        // Check if the filter value is different from the last one.
+        // Check if the filter value has changed.
         if ($last_filtered_value !== $filter) {
             // Update the last filtered value in the session.
             $this->session->set('last_filtered_value', $filter);
 
             // Reset to the first page.
             $page = 1;
-
-            // Log the change for debugging.
-            $this->logger->info('Filter value changed. Resetting to page 1.');
         }
 
         // Define the URL to the fetch_users.php script.
         $url = $_SERVER['SERVER_NAME'] . '/modules/custom/listado_usuarios/api/fetch_users.php';
 
+        // Fetch the filtered user data and update the form elements.
         try {
-            // Make a POST request with the 'json' option.
+            // Make a POST request to fetch the user data.
             $response = $this->httpClient->post($url, [
                 'json' => [
                     'filter' => $filter, // Send the filter value.
@@ -262,11 +256,11 @@ class ListadoUsuariosForm extends FormBase {
             }
 
             // Update the pager element.
-            $form['listado_usuarios_wrapper']['pager']['#title'] = $this->t('NEW Pager');
             $form['listado_usuarios_wrapper']['pager']['#options'] = $pager_options;
             $form['listado_usuarios_wrapper']['pager']['#default_value'] = $page;
         }
         catch (\Exception $e) {
+            // Log any errors.
             $this->logger->warning('Unable to complete the request. Error: ' . $e->getMessage());
             $form['listado_usuarios_wrapper']['listado_usuarios_table']['#rows'] = [
                 ['No se encontraron usuarios debido a un error.'],
