@@ -1,0 +1,6 @@
+# Admin Menu links for the listado_usuarios module.
+listado_usuarios.settings:
+  title: Configuración Listado de Usuarios
+  parent: system.admin_config_system
+  route_name: listado_usuarios.settings
+  weight: 10

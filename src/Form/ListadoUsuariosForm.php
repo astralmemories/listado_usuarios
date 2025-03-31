@@ -72,23 +72,48 @@ class ListadoUsuariosForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
-    $url = $_SERVER['SERVER_NAME'] . '/modules/custom/listado_usuarios/api/fetch_users.php';
+    // Grab the module's configuration settings.
+    $settings = $this->config('listado_usuarios.settings');
+
+    // Check if the API URL is set in the module's settings.
+    if ($settings->get('api_url') !== NULL) {
+      // Get the API URL from the module's settings.
+      $url = $settings->get('api_url');
+
+    }
+    // If the URL is not set, use a default URL.
+    else {
+      $url = $_SERVER['SERVER_NAME'] . '/modules/custom/listado_usuarios/api/fetch_users.php';
+    }
+    // Save the api_url value in the session.
+    $this->session->set('api_url', $url);
+
+    // If the users_per_page setting is not set, use the default value.
+    $users_per_page = 5;
+    // Check if the users_per_page setting is set in the module's settings.
+    if ($settings->get('users_per_page') !== NULL) {
+      // Get the number of users per page from the module's settings.
+      $users_per_page = $settings->get('users_per_page');
+    }
+
+    // Save the users_per_page value in the session.
+    $this->session->set('users_per_page', $users_per_page);
 
     try {
       // Make a POST request to fetch the user data.
       $response = $this->httpClient->post($url, [
         'json' => [
       // Limit the number of results per page.
-          'limit' => 5,
+          'limit' => $users_per_page,
         ],
       ]);
 
       // Decode the response body.
       $data = json_decode($response->getBody()->getContents());
 
-      // Extract the first 5 users if data is available.
+      // Extract the first ($users_per_page) users if data is available.
       if ($data && isset($data->usuarios)) {
-        $users = array_slice($data->usuarios, 0, 5);
+        $users = array_slice($data->usuarios, 0, $users_per_page);
       }
       else {
         $users = [];
@@ -162,7 +187,7 @@ class ListadoUsuariosForm extends FormBase {
     ];
 
     // Calculate the total number of pages.
-    $total_pages = $data->total / 5;
+    $total_pages = $data->total / $users_per_page;
     $total_pages = ceil($total_pages);
 
     // Prepare the pager options.
@@ -216,18 +241,21 @@ class ListadoUsuariosForm extends FormBase {
       $page = 1;
     }
 
-    // Define the URL to the fetch_users.php script.
-    $url = $_SERVER['SERVER_NAME'] . '/modules/custom/listado_usuarios/api/fetch_users.php';
+    // Get the number of users per page from the session.
+    $users_per_page = $this->session->get('users_per_page', 5);
+
+    // Get the API URL from the session.
+    $api_url = $this->session->get('api_url', $_SERVER['SERVER_NAME'] . '/modules/custom/listado_usuarios/api/fetch_users.php');
 
     // Fetch the filtered user data and update the form elements.
     try {
       // Make a POST request to fetch the user data.
-      $response = $this->httpClient->post($url, [
+      $response = $this->httpClient->post($api_url, [
         'json' => [
       // Send the filter value.
           'filter' => $filter,
       // Limit the number of results per page.
-          'limit' => 5,
+          'limit' => $users_per_page,
       // Send the current page.
           'page' => $page,
         ],
@@ -265,7 +293,7 @@ class ListadoUsuariosForm extends FormBase {
       $form['listado_usuarios_wrapper']['listado_usuarios_table']['#rows'] = $table_rows;
 
       // Calculate new number of pages.
-      $total_pages = $data->total_filtered / 5;
+      $total_pages = $data->total_filtered / $users_per_page;
       $total_pages = ceil($total_pages);
 
       // Prepare the options for the pager.

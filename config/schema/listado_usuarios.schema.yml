@@ -1,0 +1,14 @@
+# Schema for the configuration files of the Anytown module.
+# https://www.drupal.org/docs/drupal-apis/configuration-api/configuration-schemametadata
+listado_usuarios.settings:
+  type: config_object
+  label: 'Configuración Listado de Usuarios'
+  mapping:
+    api_url:
+      type: string
+      label: 'API URL'
+      description: 'URL de la API para obtener los usuarios.'
+    users_per_page:
+      type: integer
+      label: 'Usuarios por página'
+      description: 'Número de usuarios a mostrar por página.'
