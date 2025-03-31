@@ -126,6 +126,7 @@ class ListadoUsuariosForm extends FormBase {
     // Build the table rows for the user list.
     $table_rows = [];
     if (!empty($users)) {
+      // Extract the users from the response.
       foreach ($users as $user) {
         $table_rows[] = [
           $user->id,
@@ -137,7 +138,14 @@ class ListadoUsuariosForm extends FormBase {
       }
     }
     else {
-      $table_rows[] = ['No se encontraron usuarios.'];
+      // If no users are found, display a message using the colspan option.
+      // This will span all columns in the table.
+      $table_rows[] = [
+        [
+          'data' => $this->t('No se encontraron usuarios.'),
+          'colspan' => 5,
+        ],
+      ];
     }
 
     // Add the user list table to the wrapper.
@@ -230,7 +238,8 @@ class ListadoUsuariosForm extends FormBase {
 
       // If the response contains users, build the table rows.
       $table_rows = [];
-      if ($data && isset($data->usuarios)) {
+      if ($data && isset($data->usuarios) && !empty($data->usuarios)) {
+        // Extract the users from the response.
         foreach ($data->usuarios as $user) {
           $table_rows[] = [
             $user->id,
@@ -242,7 +251,14 @@ class ListadoUsuariosForm extends FormBase {
         }
       }
       else {
-        $table_rows[] = ['No se encontraron usuarios.'];
+        // If no users are found, display a message using the colspan option.
+        // This will span all columns in the table.
+        $table_rows[] = [
+          [
+            'data' => $this->t('No se encontraron usuarios.'),
+            'colspan' => 5,
+          ],
+        ];
       }
 
       // Update the table rows in the form.
@@ -266,7 +282,7 @@ class ListadoUsuariosForm extends FormBase {
       // Log any errors.
       $this->logger->warning('Unable to complete the request. Error: ' . $e->getMessage());
       $form['listado_usuarios_wrapper']['listado_usuarios_table']['#rows'] = [
-            ['No se encontraron usuarios debido a un error.'],
+            [$this->t('No se encontraron usuarios debido a un error.')],
       ];
     }
 
