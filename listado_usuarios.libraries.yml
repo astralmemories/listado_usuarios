@@ -1,4 +1,4 @@
-listado-usuarios-style:
+listado-usuarios:
   css:
     component:
       css/style.css: {}

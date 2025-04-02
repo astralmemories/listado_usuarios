@@ -73,7 +73,7 @@ class ListadoUsuariosForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
     // Attach the CSS library to the form.
-    $form['#attached']['library'][] = 'listado_usuarios/listado-usuarios-style';
+    $form['#attached']['library'][] = 'listado_usuarios/listado-usuarios';
 
     // Grab the module's configuration settings.
     $settings = $this->config('listado_usuarios.settings');
@@ -196,30 +196,9 @@ class ListadoUsuariosForm extends FormBase {
     ];
 
     // Calculate the total number of pages.
-    $total_pages = ceil($data->total / $users_per_page);
+    $total_pages = $data->total / $users_per_page;
+    $total_pages = ceil($total_pages);
 
-    // Ensure the pager container is initialized as an array.
-    $form['listado_usuarios_wrapper']['paginador'] = [
-      '#type' => 'container',
-      '#attributes' => ['class' => 'pager-list'],
-    ];
-
-    // Add links for each page.
-    for ($i = 1; $i <= $total_pages; $i++) {
-      $form['listado_usuarios_wrapper']['paginador']['page_button_' . $i] = [
-        '#type' => 'button',
-        '#value' => $i,
-        '#attributes' => [
-          'class' => ['pager-list-item'],
-        ],
-        '#ajax' => [
-          'callback' => '::updateList',
-          'wrapper' => 'listado-usuarios-wrapper',
-        ],
-      ];
-    }
-
-    /*
     // Prepare the pager options.
     $pager_options = [];
     for ($i = 1; $i <= $total_pages; $i++) {
@@ -237,7 +216,6 @@ class ListadoUsuariosForm extends FormBase {
         'wrapper' => 'listado-usuarios-wrapper',
       ],
     ];
-    */
 
     // Return the form.
     return $form;
@@ -258,15 +236,7 @@ class ListadoUsuariosForm extends FormBase {
   public function updateList(array $form, FormStateInterface $form_state) {
     // Get the filter value and current page from the form.
     $filter = $form_state->getValue('filter_users');
-    //$page = $form_state->getValue('pager') ?? 1;
-
-    // Get the page number from the button that triggered the AJAX callback.
-    $page = $form_state->getTriggeringElement()['#value'] ?? 1;
-    // Log the page number for debugging.
-    $this->logger->debug('Page number: @page', ['@page' => $page]);
-
-    // Log the triggering element for debugging.
-    //$this->logger->debug('Triggering element: @element', ['@element' => print_r($form_state->getTriggeringElement(), TRUE)]);
+    $page = $form_state->getValue('pager') ?? 1;
 
     // Retrieve the last filtered value from the session.
     $last_filtered_value = $this->session->get('last_filtered_value', '');
@@ -332,31 +302,9 @@ class ListadoUsuariosForm extends FormBase {
       $form['listado_usuarios_wrapper']['listado_usuarios_table']['#rows'] = $table_rows;
 
       // Calculate new number of pages.
-      $total_pages = ceil($data->total_filtered / $users_per_page);
+      $total_pages = $data->total_filtered / $users_per_page;
+      $total_pages = ceil($total_pages);
 
-      // Rebuild the buttons in the paginador element.
-      $form['listado_usuarios_wrapper']['paginador'] = [
-        '#type' => 'container',
-        '#attributes' => ['class' => 'pager-list'],
-      ];
-
-      // Update the paginador element.
-      for ($i = 1; $i <= $total_pages; $i++) {
-        $form['listado_usuarios_wrapper']['paginador']['page_button_' . $i] = [
-          '#type' => 'button',
-          '#value' => $i,
-          '#attributes' => [
-            'class' => ['pager-list-item'],
-          ],
-          '#ajax' => [
-            'callback' => '::updateList',
-            'wrapper' => 'listado-usuarios-wrapper',
-          ],
-        ];
-      }
-
-
-      /*
       // Prepare the options for the pager.
       $pager_options = [];
       for ($i = 1; $i <= $total_pages; $i++) {
@@ -366,7 +314,6 @@ class ListadoUsuariosForm extends FormBase {
       // Update the pager element.
       $form['listado_usuarios_wrapper']['pager']['#options'] = $pager_options;
       $form['listado_usuarios_wrapper']['pager']['#default_value'] = $page;
-      */
     }
     catch (\Exception $e) {
       // Log any errors.
