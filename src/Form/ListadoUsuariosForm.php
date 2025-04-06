@@ -10,6 +10,8 @@ use GuzzleHttp\ClientInterface;
 use Drupal\Core\DependencyInjection\AutowireTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Drupal\Component\Render\Markup;
+use Drupal\Component\Utility\Html;
 
 /**
  * Implements the ajax form controller.
@@ -196,13 +198,12 @@ class ListadoUsuariosForm extends FormBase {
     ];
 
     // Calculate the total number of pages.
-    $total_pages = $data->total / $users_per_page;
-    $total_pages = ceil($total_pages);
+    $total_pages = ceil($data->total / $users_per_page);
 
     // Prepare the pager options.
     $pager_options = [];
     for ($i = 1; $i <= $total_pages; $i++) {
-      $pager_options[$i] = $this->t('Page @num', ['@num' => $i]);
+      $pager_options[$i] = $this->t('Página @num', ['@num' => $i]);
     }
 
     // Add a pager element to the form using a select dropdown.
@@ -302,13 +303,12 @@ class ListadoUsuariosForm extends FormBase {
       $form['listado_usuarios_wrapper']['listado_usuarios_table']['#rows'] = $table_rows;
 
       // Calculate new number of pages.
-      $total_pages = $data->total_filtered / $users_per_page;
-      $total_pages = ceil($total_pages);
+      $total_pages = ceil($data->total_filtered / $users_per_page);
 
       // Prepare the options for the pager.
       $pager_options = [];
       for ($i = 1; $i <= $total_pages; $i++) {
-        $pager_options[$i] = $this->t('Page @num', ['@num' => $i]);
+        $pager_options[$i] = $this->t('Página @num', ['@num' => $i]);
       }
 
       // Update the pager element.
