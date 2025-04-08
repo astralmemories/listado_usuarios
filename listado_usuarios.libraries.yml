@@ -2,3 +2,5 @@ listado-usuarios:
   css:
     component:
       css/style.css: {}
+  js:
+    js/custom-pager.js: {}

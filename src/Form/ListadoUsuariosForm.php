@@ -11,7 +11,7 @@ use Drupal\Core\DependencyInjection\AutowireTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Drupal\Component\Render\Markup;
-use Drupal\Component\Utility\Html;
+use Drupal\Core\Ajax\AjaxResponse;
 
 /**
  * Implements the ajax form controller.
@@ -34,7 +34,7 @@ class ListadoUsuariosForm extends FormBase {
   protected $httpClient;
 
   /**
-   * Logger channel for logging messages.
+   * The logger service for logging errors and warnings.
    *
    * @var \Psr\Log\LoggerInterface
    */
@@ -47,6 +47,14 @@ class ListadoUsuariosForm extends FormBase {
    */
   protected $session;
 
+  /**
+   * Constructs the form object.
+   *
+   * @param \GuzzleHttp\ClientInterface $httpClient
+   *   The HTTP client service.
+   * @param \Symfony\Component\HttpFoundation\Session\SessionInterface $session
+   *   The session service.
+   */
   public function __construct(ClientInterface $httpClient, SessionInterface $session) {
     $this->httpClient = $httpClient;
     $this->logger = $this->getLogger('listado_usuarios');
@@ -71,10 +79,18 @@ class ListadoUsuariosForm extends FormBase {
   }
 
   /**
-   * {@inheritdoc}
+   * Builds the user list form.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   *
+   * @return array
+   *   The rendered form array.
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
-    // Attach the CSS library to the form.
+    // Attach the custom library for styling and JavaScript.
     $form['#attached']['library'][] = 'listado_usuarios/listado-usuarios';
 
     // Grab the module's configuration settings.
@@ -93,17 +109,14 @@ class ListadoUsuariosForm extends FormBase {
     // Save the api_url value in the session.
     $this->session->set('api_url', $url);
 
-    // If the users_per_page setting is not set, use the default value.
-    $users_per_page = 5;
-    // Check if the users_per_page setting is set in the module's settings.
-    if ($settings->get('users_per_page') !== NULL) {
-      // Get the number of users per page from the module's settings.
-      $users_per_page = $settings->get('users_per_page');
-    }
+    // Get the number of users per page.
+    // If the users_per_page setting is not set, use the default value 5.
+    $users_per_page = $settings->get('users_per_page') ?? 5;
 
     // Save the users_per_page value in the session.
     $this->session->set('users_per_page', $users_per_page);
 
+    // Fetch the user data from the API.
     try {
       // Make a POST request to fetch the user data.
       $response = $this->httpClient->post($url, [
@@ -206,7 +219,7 @@ class ListadoUsuariosForm extends FormBase {
       $pager_options[$i] = $this->t('Página @num', ['@num' => $i]);
     }
 
-    // Add a pager element to the form using a select dropdown.
+    // Add the pager select element.
     $form['listado_usuarios_wrapper']['pager'] = [
       '#type' => 'select',
       '#title' => $this->t('Paginador'),
@@ -218,25 +231,31 @@ class ListadoUsuariosForm extends FormBase {
       ],
     ];
 
+    // Add the custom pager buttons.
+    $form['listado_usuarios_wrapper']['custom_pager_buttons'] = $this->buildCustomPagerButtons((int) $total_pages, 1);
+
     // Return the form.
     return $form;
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    // No se necesita lógica de envío.
-    // This form does not require traditional submission logic since it relies
-    // entirely on AJAX.
-  }
+  
 
   /**
-   * Ajax callback for the filter button.
+   * Handles the AJAX callback to update the user list.
+   *
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state object.
+   *
+   * @return \Drupal\Core\Ajax\AjaxResponse
+   *   The AJAX response containing the updated user list.
    */
-  public function updateList(array $form, FormStateInterface $form_state) {
-    // Get the filter value and current page from the form.
+  public function updateList(array &$form, FormStateInterface $form_state): AjaxResponse {
+    // Get the filter value.
     $filter = $form_state->getValue('filter_users');
+
+    // Get the current page from the pager select element.
     $page = $form_state->getValue('pager') ?? 1;
 
     // Retrieve the last filtered value from the session.
@@ -289,8 +308,7 @@ class ListadoUsuariosForm extends FormBase {
         }
       }
       else {
-        // If no users are found, display a message using the colspan option.
-        // This will span all columns in the table.
+        // If no users are found, display a message.
         $table_rows[] = [
           [
             'data' => $this->t('No se encontraron usuarios.'),
@@ -314,17 +332,56 @@ class ListadoUsuariosForm extends FormBase {
       // Update the pager element.
       $form['listado_usuarios_wrapper']['pager']['#options'] = $pager_options;
       $form['listado_usuarios_wrapper']['pager']['#default_value'] = $page;
+
+      // Update the custom pager buttons.
+      $form['listado_usuarios_wrapper']['custom_pager_buttons'] = $this->buildCustomPagerButtons((int) $total_pages, (int) $page);
+
+      // Return the updated wrapper as part of the AJAX response.
+      $response = new AjaxResponse();
+      $response->addCommand(new \Drupal\Core\Ajax\ReplaceCommand('#listado-usuarios-wrapper', $form['listado_usuarios_wrapper']));
+      return $response;
     }
     catch (\Exception $e) {
-      // Log any errors.
-      $this->logger->warning('Unable to complete the request. Error: ' . $e->getMessage());
+      // Log the error and return an empty response.
+      $this->logger->error('An error occurred while fetching user data: ' . $e->getMessage());
       $form['listado_usuarios_wrapper']['listado_usuarios_table']['#rows'] = [
             [$this->t('No se encontraron usuarios debido a un error.')],
       ];
+      return new AjaxResponse();
+    }
+  }
+
+  /**
+   * Builds the custom pager buttons.
+   *
+   * @param int $total_pages
+   *   The total number of pages.
+   * @param int $current_page
+   *   The current page number.
+   *
+   * @return array
+   *   A render array for the custom pager buttons.
+   */
+  private function buildCustomPagerButtons(int $total_pages, int $current_page): array {
+    $buttons = '';
+    for ($i = 1; $i <= $total_pages; $i++) {
+      $active_class = $i === $current_page ? 'active' : '';
+      $buttons .= "<button type='button' data-value='{$i}' class='{$active_class}'>{$i}</button>";
     }
 
-    // Return the updated wrapper.
-    return $form['listado_usuarios_wrapper'];
+    return [
+      '#type' => 'markup',
+      '#markup' => "<div class='custom-select' id='customSelect'>{$buttons}</div>",
+      '#allowed_tags' => ['div', 'button'],
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
+    // This form does not require traditional submission logic since it relies
+    // entirely on AJAX.
   }
 
 }
