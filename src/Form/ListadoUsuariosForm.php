@@ -10,7 +10,6 @@ use GuzzleHttp\ClientInterface;
 use Drupal\Core\DependencyInjection\AutowireTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Drupal\Component\Render\Markup;
 use Drupal\Core\Ajax\AjaxResponse;
 
 /**
@@ -365,8 +364,22 @@ class ListadoUsuariosForm extends FormBase {
   private function buildCustomPagerButtons(int $total_pages, int $current_page): array {
     $buttons = '';
     for ($i = 1; $i <= $total_pages; $i++) {
+      // Check if the $current_page is not the first page.
+      if ($current_page !== 1 && $i === 1) {
+        // Add a button to go to the previous page.
+        $previous_page = $current_page - 1;
+        $buttons .= "<button type='button' data-value='{$previous_page}' class='first-page'>&laquo;</button>";
+      }
+
       $active_class = $i === $current_page ? 'active' : '';
       $buttons .= "<button type='button' data-value='{$i}' class='{$active_class}'>{$i}</button>";
+
+      // Check if the $current_page is not the last page.
+      if ($current_page !== $total_pages && $i === $total_pages) {
+        // Add a button to go to the next page.
+        $next_page = $current_page + 1;
+        $buttons .= "<button type='button' data-value='{$next_page}' class='last-page'>&raquo;</button>";
+      }
     }
 
     return [

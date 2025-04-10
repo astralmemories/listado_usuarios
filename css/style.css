@@ -37,3 +37,43 @@
     background-color: #167eba;
     color: white;
   }
+
+  /* Hide the <select> element pager. */
+  #listado-usuarios-wrapper select.form-select {
+    display: none;
+  }
+
+  #customSelect button {
+    border: 1px solid #dee2e6;
+    background: transparent;
+    color: #167eba;
+    cursor: pointer;
+    font-size: 16px;
+    padding: .5rem .75rem;
+    margin-left: -1px;
+    font-weight: bold;
+  }
+
+  #customSelect button:first-child {
+    border-top-left-radius: .25rem;
+    border-bottom-left-radius: .25rem;
+  }
+
+  #customSelect button:last-child {
+    border-top-right-radius: .25rem;
+    border-bottom-right-radius: .25rem;
+  }
+
+  #customSelect button:hover {
+    color: #0056b3;
+    text-decoration: none;
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+  }
+
+  #customSelect button.active {
+    z-index: 1;
+    color: #fff;
+    background-color: #167eba;
+    border-color: #167eba;
+  }
