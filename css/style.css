@@ -1,79 +1,80 @@
 .listado-usuarios-form-wrapper {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
 
-  #edit-filter-users {
-    width: 100%;
-  }
+#edit-filter-users {
+  width: 100%;
+}
 
-  #edit-filter-button {
-    flex-basis: 25%;
-    margin-right: 0px;
-    margin-left: 20px;
-  }
+#edit-filter-button {
+  flex-basis: 25%;
+  margin-right: 0px;
+  margin-left: 20px;
+}
 
 #listado-usuarios-wrapper table {
-    font-family: Arial, Helvetica, sans-serif;
-    border-collapse: collapse;
-    width: 100%;
-  }
-  
-  #listado-usuarios-wrapper table td, #listado-usuarios-wrapper table th {
-    border: 1px solid #ddd;
-    padding: 8px;
-  }
-  
-  #listado-usuarios-wrapper table tr:nth-child(even){background-color: #f2f2f2;}
-  
-  #listado-usuarios-wrapper table tr:hover {background-color: #ddd;}
-  
-  #listado-usuarios-wrapper table th {
-    padding-top: 12px;
-    padding-bottom: 12px;
-    text-align: left;
-    background-color: #167eba;
-    color: white;
-  }
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+#listado-usuarios-wrapper table td,
+#listado-usuarios-wrapper table th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+#listado-usuarios-wrapper table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+#listado-usuarios-wrapper table tr:hover {
+  background-color: #ddd;
+}
+#listado-usuarios-wrapper table th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #167eba;
+  color: white;
+}
 
-  /* Hide the <select> element pager. */
-  #listado-usuarios-wrapper select.form-select {
-    display: none;
-  }
+/* Hide the <select> element pager. */
+#listado-usuarios-wrapper select.form-select {
+  display: none;
+}
 
-  #customSelect button {
-    border: 1px solid #dee2e6;
-    background: transparent;
-    color: #167eba;
-    cursor: pointer;
-    font-size: 16px;
-    padding: .5rem .75rem;
-    margin-left: -1px;
-    font-weight: bold;
-  }
+#customSelect button {
+  border: 1px solid #dee2e6;
+  background: transparent;
+  color: #167eba;
+  cursor: pointer;
+  font-size: 16px;
+  padding: .5rem .75rem;
+  margin-left: -1px;
+  font-weight: bold;
+}
 
-  #customSelect button:first-child {
-    border-top-left-radius: .25rem;
-    border-bottom-left-radius: .25rem;
-  }
+#customSelect button:first-child {
+  border-top-left-radius: .25rem;
+  border-bottom-left-radius: .25rem;
+}
 
-  #customSelect button:last-child {
-    border-top-right-radius: .25rem;
-    border-bottom-right-radius: .25rem;
-  }
+#customSelect button:last-child {
+  border-top-right-radius: .25rem;
+  border-bottom-right-radius: .25rem;
+}
 
-  #customSelect button:hover {
-    color: #0056b3;
-    text-decoration: none;
-    background-color: #e9ecef;
-    border-color: #dee2e6;
-  }
+#customSelect button:hover {
+  color: #0056b3;
+  text-decoration: none;
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+}
 
-  #customSelect button.active {
-    z-index: 1;
-    color: #fff;
-    background-color: #167eba;
-    border-color: #167eba;
-  }
+#customSelect button.active {
+  z-index: 1;
+  color: #fff;
+  background-color: #167eba;
+  border-color: #167eba;
+}

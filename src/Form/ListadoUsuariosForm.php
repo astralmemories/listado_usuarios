@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\listado_usuarios\Form;
 
+use Drupal\Core\Ajax\ReplaceCommand;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use GuzzleHttp\ClientInterface;
@@ -237,8 +238,6 @@ class ListadoUsuariosForm extends FormBase {
     return $form;
   }
 
-  
-
   /**
    * Handles the AJAX callback to update the user list.
    *
@@ -337,7 +336,7 @@ class ListadoUsuariosForm extends FormBase {
 
       // Return the updated wrapper as part of the AJAX response.
       $response = new AjaxResponse();
-      $response->addCommand(new \Drupal\Core\Ajax\ReplaceCommand('#listado-usuarios-wrapper', $form['listado_usuarios_wrapper']));
+      $response->addCommand(new ReplaceCommand('#listado-usuarios-wrapper', $form['listado_usuarios_wrapper']));
       return $response;
     }
     catch (\Exception $e) {
