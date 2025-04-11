@@ -1,9 +1,11 @@
 
 # Listado Usuarios
 
+[Lea la versión en español aquí](README_ES.md)
+
 ## Objective
 
-**Listado Usuarios** is a custom Drupal 10/11 module I developed as part of a technical assessment. The goal of the module is to showcase my ability to build a fully functional user listing system **without relying on Drupal Views**, using only custom code and Drupal best practices.
+**Listado Usuarios** is a custom module for Drupal 10/11, developed as part of a technical assessment. The objective was to demonstrate a fully functional user listing system **without relying on Drupal Views**, using only custom code and Drupal best practices.
 
 The module displays a **paginated list of users**, showing the following information per user:
 
@@ -135,10 +137,8 @@ To install the **Listado Usuarios** module in your Drupal project:
 Clone this repository into your `modules/custom/` directory:
 
 ```bash
-git clone https://github.com/your-username/listado_usuarios.git web/modules/custom/listado_usuarios
+git clone https://github.com/astralmemories/listado_usuarios.git web/modules/custom/listado_usuarios
 ```
-
-> ⚠️ Make sure you're placing the module in the correct directory: `modules/custom/`, not `themes/custom/`.
 
 ### 2. Enable the Module
 
