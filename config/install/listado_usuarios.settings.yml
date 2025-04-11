@@ -1,3 +1,4 @@
 # Default configuration for the module.
 api_url: ''
 users_per_page: 5
+enable_console_logs: false

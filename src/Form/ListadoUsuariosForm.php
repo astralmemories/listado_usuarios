@@ -93,6 +93,11 @@ class ListadoUsuariosForm extends FormBase {
     // Attach the custom library for styling and JavaScript.
     $form['#attached']['library'][] = 'listado_usuarios/listado-usuarios';
 
+    // Attach the enable_console_logs setting to drupalSettings.
+    $form['#attached']['drupalSettings']['listado_usuarios'] = [
+      'enable_console_logs' => $this->config('listado_usuarios.settings')->get('enable_console_logs'),
+    ];
+
     // Grab the module's configuration settings.
     $settings = $this->config('listado_usuarios.settings');
 

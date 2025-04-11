@@ -12,3 +12,7 @@ listado_usuarios.settings:
       type: integer
       label: 'Usuarios por página'
       description: 'Número de usuarios a mostrar por página.'
+    enable_console_logs:
+      type: boolean
+      label: 'Habilitar logs en la consola'
+      description: 'Si está activado, se mostrarán logs en la consola del navegador.'

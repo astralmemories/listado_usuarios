@@ -55,6 +55,14 @@ final class SettingsForm extends ConfigFormBase {
       '#max' => 100,
     ];
 
+    // Checkbox to enable or disable console logs.
+    $form['enable_console_logs'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Habilitar logs en la consola'),
+      '#description' => $this->t('Si está activado, se mostrarán logs en la consola del navegador.'),
+      '#default_value' => $this->config(self::SETTINGS)->get('enable_console_logs'),
+    ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -92,6 +100,7 @@ final class SettingsForm extends ConfigFormBase {
     $this->config(self::SETTINGS)
       ->set('api_url', $form_state->getValue('api_url'))
       ->set('users_per_page', $form_state->getValue('users_per_page'))
+      ->set('enable_console_logs', $form_state->getValue('enable_console_logs'))
       ->save();
 
     $this->messenger()->addMessage($this->t('Configuración de Listado De Usuarios actualizado.'));
