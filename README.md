@@ -100,19 +100,19 @@ listado_usuarios/
 
 ### Module Page  
 ![Module Page](./screenshots/module_page.png)  
-The `/listado-usuarios` page showing the user list table.
+*The `/listado-usuarios` page showing the user list table.*
 
 ### Pager Feature  
 ![Pager](./screenshots/module_pager.png)  
-Navigate through the user list seamlessly using the AJAX-powered pager located above the table.
+*Navigate through the user list seamlessly using the AJAX-powered pager located above the table.*
 
 ### Filtering with the Search Box  
 ![Filtering](./screenshots/search_box_filtering.png)  
-The search box allows users to easily filter the user list table.
+*The search box allows users to easily filter the user list table.*
 
 ### Module Configuration Page  
 ![Config Page](./screenshots/configuration_page.png)  
-The `/admin/config/system/listado_usuarios` page showing the available configuration options.
+*The `/admin/config/system/listado_usuarios` page showing the available configuration options.*
 
 ---
 
